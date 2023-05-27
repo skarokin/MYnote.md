@@ -41,3 +41,5 @@ Implementation in order of precedence
     - Ability  to export notes to `.pdf`
 7. Ability to search for notes, and search within notes
 8. Daily notes
+
+![karthik](./zoomconference.png)
