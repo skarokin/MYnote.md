@@ -43,11 +43,13 @@ const handleFileChange = (eventType, filename) => {
   if (filename === path.basename(filePath)) {
     fs.readFile(filePath, 'utf-8', (err, data) => {
       if (err) {
+        editor.disabled = true;
         console.error(err);
         return;
       }
       editor.value = data;
       renderMarkdown();
+      editor.disabled = false;
     });
   }
 };
@@ -66,9 +68,15 @@ const stopFileWatching = () => {
 };
 
 // Function to handle file selection
+// Disable text field until a file is selected
+// Ensure that only .md files can be selected
 const handleFileSelection = (event) => {
   const file = event.target.files[0];
   if (file) {
+    if (!file.name.endsWith('md')) {
+      alert('Please select a Markdown (.md) file!');
+      return;
+    }
     filePath = file.path;
     stopFileWatching();
     fs.readFile(filePath, 'utf-8', (err, data) => {
@@ -79,7 +87,10 @@ const handleFileSelection = (event) => {
       editor.value = data;
       renderMarkdown();
       startFileWatching();
+      editor.disabled = false;
     });
+  } else {
+    editor.disabled = true;
   }
 };
 
@@ -127,3 +138,78 @@ editor.addEventListener('keydown', (event) => {
     saveMarkdownToFile();
   }
 });
+
+// Add event listener for bracket key press to autoclose brackets
+editor.addEventListener('keydown', (event) => {
+  if (event.key === '(') {
+    event.preventDefault();
+    const { selectionStart, selectionEnd } = editor;
+    // Insert the closing bracket at current cursor position
+    const closingBracket = ')';
+    const newText = editor.value.substring(0, selectionStart) + event.key + closingBracket + editor.value.substring(selectionEnd);
+
+    // Update the textarea value with the new text and adjust the cursor position
+    editor.value = newText;
+    editor.selectionStart = editor.selectionEnd = selectionStart + closingBracket.length;;
+    renderMarkdown();
+    saveMarkdownToFile();
+  } else if (event.key === '{') {
+    event.preventDefault();
+    const { selectionStart, selectionEnd } = editor;
+    // Insert the closing bracket at current cursor position
+    const closingBracket = '}';
+    const newText = editor.value.substring(0, selectionStart) + event.key + closingBracket + editor.value.substring(selectionEnd);
+
+    // Update the textarea value with the new text and adjust the cursor position
+    editor.value = newText;
+    editor.selectionStart = editor.selectionEnd = selectionStart + closingBracket.length;;
+    renderMarkdown();
+    saveMarkdownToFile();
+  } else if (event.key === '[') {
+    event.preventDefault();
+    const { selectionStart, selectionEnd } = editor;
+    // Insert the closing bracket at current cursor position
+    const closingBracket = ']';
+    const newText = editor.value.substring(0, selectionStart) + event.key + closingBracket + editor.value.substring(selectionEnd);
+
+    // Update the textarea value with the new text and adjust the cursor position
+    editor.value = newText;
+    editor.selectionStart = editor.selectionEnd = selectionStart + closingBracket.length;
+    renderMarkdown();
+    saveMarkdownToFile();
+  }
+});
+
+// Add event listener for enter key press to maintain indentation
+editor.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const { value, selectionStart } = editor;
+    const currentLine = value.substr(0, selectionStart).split('\n').pop();
+    const indentation = /^\s*/.exec(currentLine)[0];
+    const newText = `\n${indentation}`;
+    editor.setRangeText(newText, selectionStart, selectionStart, 'end');
+  }
+});
+
+// Add event listener for backspace key press to remove indentation
+editor.addEventListener('keydown', (event) => {
+  if (event.key === 'Backspace') {
+    const { value, selectionStart } = editor;
+    const currentLine = value.substr(0, selectionStart).split('\n').pop();
+    const indentation = currentLine === '' ? '' : /^ +/.exec(currentLine)[0];
+    const tabSize = 4; // tab size is 4 spaces
+    // if indentation is a multiple of tab size, and everything preceding the cursor is a space, remove indentation
+    if (indentation.length % tabSize === 0 && indentation.length > 0 && /^ +$/.test(currentLine.substring(0, selectionStart))) {
+      event.preventDefault();
+      const prevIndentation = indentation.slice(0, -tabSize);
+      const newText = prevIndentation + currentLine.slice(indentation.length);
+      const newSelectionStart = selectionStart - tabSize;
+      editor.setRangeText(newText, selectionStart - currentLine.length, selectionStart, 'end');
+      editor.selectionStart = editor.selectionEnd = newSelectionStart;
+    }
+  }
+});
+
+// by default, editor is disabled until a user selects a file
+editor.disabled = true;

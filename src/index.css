@@ -1,12 +1,13 @@
 :root {
   --background: #282a36;
+  --background-code: #1a1b26;
   --text-normal: #f8f8f2;
   --text-title-h1: #bd93f9;
   --text-title-h2: #ffb86c;
   --text-title-h3: #50fa7b;
   --text-title-h4: #ff5555;
   --text-title-h5: #f1fa8c;
-  --text-title-h6: #bd93f4;
+  --text-title-h6: #9bbcfb;
   --text-link: #8be9fd;
   --markup-code: #ffb86c;
   --text-tag: #50fa7b;
@@ -52,18 +53,49 @@ h6 {
   color: var(--text-title-h6);
 }
 
-#editor {
-  border: 2px #e59700;
-  border-style: solid;
+/* custom scrollbar */
+#editor::-webkit-scrollbar {
+  width: 5px;
+}
+
+#editor::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+#editor::-webkit-scrollbar-thumb {
+  background-color: #888;
   border-radius: 5px;
+  min-height: 50px;
+}
+
+#editor::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+#editor {
+  border: transparent;
+  outline: none;
   font-family: 'Ubuntu', monospace;
   font-size: 24px;
   height: 200px;
-  width: 500px;
+  width: 800px;
   overflow: hidden;
+  overflow-y: scroll;
   color: var(--text-normal);
-  background-color: var(--background);
+  background-color: transparent;
   resize: none;
+}
+
+/* for code blocks */
+pre {
+  background: var(--background-code);
+  padding: 25px 25px;
+  border-radius: 7px;
+}
+
+/* wraps code in code block if needed */
+pre code {
+  white-space: pre-wrap;
 }
 
 #outputField {
