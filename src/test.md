@@ -2,41 +2,7 @@
 ---
 - Markdown parsing
 - LaTeX parsing
-    $$\sum_{k = 1}^n \frac{1}{k(k + 1)} = \frac{n}{n + 1}$$
 - Syntax highlighting
-```py
-class Solution:
-    def minSubArrayLen(self, target: int, nums: List[int]) -> int:
-  
-                
-        # initialize min length (must use infinity for first min calculation)
-        min_length = float('inf')
-
-        # initialize front and tail pointers
-        front_pointer = 0
-        tail_pointer = 0
-
-        # initialize currentSum
-        current_sum = 0
-
-        # while front is in range, find current sum and increase window size (increment front)
-        while front_pointer < len(nums):
-
-            current_sum = current_sum + nums[front_pointer]
-            front_pointer = front_pointer + 1
-
-            # if current sum >= target, then decrease window size (increment tail) until current sum < target
-            while tail_pointer < front_pointer and current_sum >= target:
-                current_sum = current_sum - nums[tail_pointer]
-                min_length = min(min_length, front_pointer - tail_pointer)
-                tail_pointer = tail_pointer + 1
-
-        # if min length is still infinity, that means we didn't find any subarray whose sum >= target. so, return 0
-        if min_length == float('inf'):
-            return 0
-        else:
-            return min_length
-```
 - Read from `.md` file and render live preview
     - Renders edits to `.md` file live via **autosaving**, whether edit was done in-app or to the `.md` file itself
 
@@ -48,8 +14,10 @@ class Solution:
     - **POSSIBLE FIX:** Instead of saving every 300ms, save after a certain number of characters is typed
 - Undo/redo is sometimes finnicky
     - **DIFFICULT TO REPLICATE:** I can't figure out what causes this :c
-- **NEW ISSUE:** KaTeX styling and highlight.js styling does not work locally (requires loading stylesheets hosted on a server)
+- KaTeX styling and highlight.js styling does not work locally (requires loading stylesheets hosted on a server)
     - **POSSIBLE FIX:** Download the style sheets locally
+- List background-color highlights the entire line instead of just the text content as well as shifts the text slightly when background-color is applied
+    - **POSSIBLE FIX:** Make it a list of spans instead of a list of text content
 
 # log 5/28/2023
 ---
