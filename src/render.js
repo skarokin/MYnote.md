@@ -21,10 +21,9 @@ const md = require('markdown-it')({
     errorColor: '#cc0000'
 });
 
-const fileInput = document.getElementById('fileInput');
 const editor = document.getElementById('editor');
 const outputField = document.getElementById('outputField');
-let filePath = null;
+let selectedFilePath = null;      // store the currently selected Markdown file path
 let fileWatcher = null;
 
 let timeoutId = null;
@@ -40,8 +39,8 @@ const renderMarkdown = () => {
 
 // Function to handle file changes
 const handleFileChange = (eventType, filename) => {
-  if (filename === path.basename(filePath)) {
-    fs.readFile(filePath, 'utf-8', (err, data) => {
+  if (filename === path.basename(selectedFilePath)) {
+    fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
       if (err) {
         editor.disabled = true;
         console.error(err);
@@ -56,7 +55,7 @@ const handleFileChange = (eventType, filename) => {
 
 // Function to start file watching
 const startFileWatching = () => {
-  fileWatcher = fs.watch(path.dirname(filePath), handleFileChange);
+  fileWatcher = fs.watch(path.dirname(selectedFilePath), handleFileChange);
 };
 
 // Function to stop file watching
@@ -67,40 +66,13 @@ const stopFileWatching = () => {
   }
 };
 
-// Function to handle file selection
-// Disable text field until a file is selected
-// Ensure that only .md files can be selected
-const handleFileSelection = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    if (!file.name.endsWith('md')) {
-      alert('Please select a Markdown (.md) file!');
-      return;
-    }
-    filePath = file.path;
-    stopFileWatching();
-    fs.readFile(filePath, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      editor.value = data;
-      renderMarkdown();
-      startFileWatching();
-      editor.disabled = false;
-    });
-  } else {
-    editor.disabled = true;
-  }
-};
-
 // Function to save the Markdown content to the file
 const saveMarkdownToFile = () => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
-    if (filePath) {
+    if (selectedFilePath) {
       const markdownText = editor.value;
-      fs.writeFile(filePath, markdownText, 'utf-8', (err) => {
+      fs.writeFile(selectedFilePath, markdownText, 'utf-8', (err) => {
         if (err) {
           console.error(err);
           return;
@@ -110,9 +82,6 @@ const saveMarkdownToFile = () => {
     }
   },300);
 };
-
-// Add event listener to the file input for file selection
-fileInput.addEventListener('change', handleFileSelection);
 
 // Add event listener to the editor for input changes
 editor.addEventListener('input', () => {
@@ -213,3 +182,67 @@ editor.addEventListener('keydown', (event) => {
 
 // by default, editor is disabled until a user selects a file
 editor.disabled = true;
+
+const fileList = document.getElementById('fileList');
+// list all MD files and update in real time when files are added or removed or renamed
+const listMDFiles = () => {
+  const directoryName = './src'
+  fs.readdir(directoryName, (err, files) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    fileList.innerHTML = '';
+    files.forEach((file) => {
+      if (file.endsWith('.md')) {
+        const li = document.createElement('li');
+        li.textContent = file;
+        li.dataset.filePath = path.join(directoryName, file);     
+        if (selectedFilePath === li.dataset.filePath) {       // if selectedFilePath is equal to the current file path, add the selected class
+          li.classList.add('selected');
+        }
+        fileList.appendChild(li);
+      }
+    });
+  });
+};
+
+// Add an event listener to the list of MD files to handle file selection
+// and add the selected class to the selected file and remove it from the previously selected file
+fileList.addEventListener('click', (event) => {
+  const { target } = event;
+  if (target.tagName === 'LI') {
+    const { filePath } = target.dataset;
+    // if filePath exists, set selectedFilePath to filePath and stop watching the previously selected file
+    if (filePath) {
+      selectedFilePath = filePath;
+      stopFileWatching();
+      // read the file contents and update the editor and start watching the selected file
+      fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        editor.value = data;
+        renderMarkdown();
+        startFileWatching();
+        editor.disabled = false;
+      });
+      // remove the selected class from the previously selected file and add the selected class to the newly selected file
+      const selectedFile = document.querySelector('.selected');
+      if (selectedFile) {
+        selectedFile.classList.remove('selected');
+      }
+      target.classList.add('selected');
+    }
+  }
+});
+
+// Update the list of MD files if any updates occur
+fs.watch('./src', (eventType, filename) => {
+  if (filename.endsWith('.md')) {
+    listMDFiles();
+  }
+});
+
+listMDFiles();
