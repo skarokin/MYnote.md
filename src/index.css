@@ -93,9 +93,10 @@ pre {
   border-radius: 6px;
 }
 
-/* wraps code in code block if needed */
 pre code {
-  white-space: pre-wrap;
+  white-space: pre-wrap;      /* wraps code in code block if needed */
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8em;
 }
 
 /* change the appearance of inline code */
@@ -132,7 +133,7 @@ a:visited {
   color: var(--text-a);
 }
 
-.selected {
+#noteList .selected {
   background-color: var(--blockquote-border);
   border-radius: 5px;
   padding: 4px 6px;

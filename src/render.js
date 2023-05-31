@@ -108,38 +108,28 @@ editor.addEventListener('keydown', (event) => {
   }
 });
 
-// Add event listener for bracket key press to autoclose brackets
+// Map of closing characters
+const closingCharactersMap = {
+  '(': ')',
+  '{': '}',
+  '[': ']',
+  '`': '`',
+  '$': '$',
+  '*': '*',
+  '_': '_',
+};
+
+// Add event listener for auto-closing characters defined in closingCharactersMap
 editor.addEventListener('keydown', (event) => {
-  if (event.key === '(') {
+  const { key } = event;
+  const closingBracket = closingCharactersMap[key];
+  
+  if (closingBracket) {
     event.preventDefault();
     const { selectionStart, selectionEnd } = editor;
-    // Insert the closing bracket at current cursor position
-    const closingBracket = ')';
-    const newText = editor.value.substring(0, selectionStart) + event.key + closingBracket + editor.value.substring(selectionEnd);
 
-    // Update the textarea value with the new text and adjust the cursor position
-    editor.value = newText;
-    editor.selectionStart = editor.selectionEnd = selectionStart + closingBracket.length;;
-    renderMarkdown();
-    saveMarkdownToFile();
-  } else if (event.key === '{') {
-    event.preventDefault();
-    const { selectionStart, selectionEnd } = editor;
-    // Insert the closing bracket at current cursor position
-    const closingBracket = '}';
-    const newText = editor.value.substring(0, selectionStart) + event.key + closingBracket + editor.value.substring(selectionEnd);
-
-    // Update the textarea value with the new text and adjust the cursor position
-    editor.value = newText;
-    editor.selectionStart = editor.selectionEnd = selectionStart + closingBracket.length;;
-    renderMarkdown();
-    saveMarkdownToFile();
-  } else if (event.key === '[') {
-    event.preventDefault();
-    const { selectionStart, selectionEnd } = editor;
-    // Insert the closing bracket at current cursor position
-    const closingBracket = ']';
-    const newText = editor.value.substring(0, selectionStart) + event.key + closingBracket + editor.value.substring(selectionEnd);
+    // Insert the closing bracket at the current cursor position
+    const newText = editor.value.substring(0, selectionStart) + key + closingBracket + editor.value.substring(selectionEnd);
 
     // Update the textarea value with the new text and adjust the cursor position
     editor.value = newText;
@@ -158,6 +148,8 @@ editor.addEventListener('keydown', (event) => {
     const indentation = /^\s*/.exec(currentLine)[0];
     const newText = `\n${indentation}`;
     editor.setRangeText(newText, selectionStart, selectionStart, 'end');
+    renderMarkdown();
+    saveMarkdownToFile();
   }
 });
 
@@ -177,6 +169,8 @@ editor.addEventListener('keydown', (event) => {
       editor.setRangeText(newText, selectionStart - currentLine.length, selectionStart, 'end');
       editor.selectionStart = editor.selectionEnd = newSelectionStart;
     }
+    renderMarkdown();
+    saveMarkdownToFile();
   }
 });
 
@@ -196,11 +190,13 @@ const listMDFiles = () => {
     files.forEach((file) => {
       if (file.endsWith('.md')) {
         const li = document.createElement('li');
-        li.textContent = file;
-        li.dataset.filePath = path.join(directoryName, file);     
-        if (selectedFilePath === li.dataset.filePath) {       // if selectedFilePath is equal to the current file path, add the selected class
-          li.classList.add('selected');
+        const span = document.createElement('span');
+        span.textContent = file;
+        span.dataset.filePath = path.join(directoryName, file);
+        if (selectedFilePath === span.dataset.filePath) {       // if selectedFilePath is equal to the current file path, add the selected class
+          span.classList.add('selected');
         }
+        li.appendChild(span);
         fileList.appendChild(li);
       }
     });
@@ -211,7 +207,7 @@ const listMDFiles = () => {
 // and add the selected class to the selected file and remove it from the previously selected file
 fileList.addEventListener('click', (event) => {
   const { target } = event;
-  if (target.tagName === 'LI') {
+  if (target.tagName === 'SPAN') {
     const { filePath } = target.dataset;
     // if filePath exists, set selectedFilePath to filePath and stop watching the previously selected file
     if (filePath) {
