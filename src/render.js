@@ -83,6 +83,8 @@ const saveMarkdownToFile = () => {
   },300);
 };
 
+// CODE BLOCK IMPLEMENTATION
+
 // Add event listener to the editor for input changes
 editor.addEventListener('input', () => {
   renderMarkdown();
@@ -174,15 +176,17 @@ editor.addEventListener('keydown', (event) => {
   }
 });
 
+// FILE EXPLORER
+
 // by default, editor is disabled until a user selects a file
 editor.disabled = true;
 
 const fileList = document.getElementById('fileList');
 // list all MD files and update in real time when files are added or removed or renamed
 const listMDFiles = () => {
-  const directoryName = './src'
+  const directoryName = './src' // name of dir for files
   fs.readdir(directoryName, (err, files) => {
-    if (err) {
+    if (err) { // exception handling
       console.error(err);
       return;
     }
@@ -191,12 +195,46 @@ const listMDFiles = () => {
       if (file.endsWith('.md')) {
         const li = document.createElement('li');
         const span = document.createElement('span');
+        const delButton = document.createElement('i');
+        const bigContainer = document.createElement('div');
+
         span.textContent = file;
         span.dataset.filePath = path.join(directoryName, file);
+
+        delButton.setAttribute('class', 'fa fa-minus-square-o');
+        delButton.setAttribute('aria-hidden', 'true');
+        delButton.setAttribute('id', 'del-btn');
+        let delPath = directoryName + "/" + file;
+
+        delButton.addEventListener('click', function(event) {
+          if (event.target.id === 'del-btn') {
+            if (selectedFilePath === span.dataset.filePath) {
+              stopFileWatching();
+              renderMarkdown();
+            }
+            fs.unlinkSync(delPath)
+          }
+        });
+
+        delButton.addEventListener('mouseover', function() {
+          this.setAttribute('class', 'fa fa-minus-square');
+        })
+
+        delButton.addEventListener('mouseout', function() {
+          this.setAttribute('class', 'fa fa-minus-square-o');
+        })
+        function changeClass() {
+          document.getElementById("del-btn").className = "open";
+        }
+
+        bigContainer.appendChild(span);
+        bigContainer.appendChild(delButton);
+
         if (selectedFilePath === span.dataset.filePath) {       // if selectedFilePath is equal to the current file path, add the selected class
           span.classList.add('selected');
         }
-        li.appendChild(span);
+
+        li.appendChild(bigContainer);
         fileList.appendChild(li);
       }
     });

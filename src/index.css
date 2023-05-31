@@ -150,3 +150,7 @@ a:visited {
   margin: 10px;
   cursor: pointer;
 }
+
+#del-btn {
+  margin-left: 50px;
+}
