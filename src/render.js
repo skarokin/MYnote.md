@@ -209,8 +209,9 @@ const listMDFiles = () => {
         delButton.addEventListener('click', function(event) {
           if (event.target.id === 'del-btn') {
             if (selectedFilePath === span.dataset.filePath) {
-              stopFileWatching();
+              editor.value = ''
               renderMarkdown();
+              stopFileWatching();
             }
             fs.unlinkSync(delPath)
           }
