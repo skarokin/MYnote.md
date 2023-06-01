@@ -150,3 +150,34 @@ a:visited {
   margin: 10px;
   cursor: pointer;
 }
+
+/* context menu upon right click on noteList to display delete and rename*/
+#contextMenuNoteList {
+  position: fixed;
+  z-index: 10000;
+  width: 150px;
+  background: var(--blockquote-border);
+  border-radius: 5px;
+  display: none;
+}
+
+#contextMenuNoteList.visible {
+  display: block;
+}
+
+#contextMenuNoteList .contextMenuNoteListItem{
+  padding: 8px 10px;
+  font-size: 15px;
+  color: var(--text-normal);
+  cursor: pointer;
+  border-radius: 5px;
+  border-top: none;
+}
+
+#contextMenuNoteList .contextMenuNoteListItem:first-child {
+  border-top: 5px;
+}
+
+#contextMenuNoteList .contextMenuNoteListItem:hover {
+  background: var(--background-code);
+}
