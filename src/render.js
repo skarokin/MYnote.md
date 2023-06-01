@@ -21,6 +21,12 @@ const md = require('markdown-it')({
     errorColor: '#cc0000'
 });
 
+/**
+ * =======================================
+ *           MARKDOWN RENDERING
+ * =======================================
+ */
+
 const editor = document.getElementById('editor');
 const outputField = document.getElementById('outputField');
 let selectedFilePath = null;      // store the currently selected Markdown file path
@@ -36,6 +42,12 @@ const renderMarkdown = () => {
     outputField.innerHTML = renderedHTML;
   }, 300); // 300 ms delay to optimize rendering performance
 };
+
+/**
+ * =======================================
+ *             FILE WATCHING
+ * =======================================
+ */
 
 // Function to handle file changes
 const handleFileChange = (eventType, filename) => {
@@ -82,6 +94,12 @@ const saveMarkdownToFile = () => {
     }
   },300);
 };
+
+/**
+ * =============================================================================
+ *           EVENT LISTENERS FOR MARKDOWN RENDERING AND FILE WATCHING
+ * =============================================================================
+ */
 
 // Add event listener to the editor for input changes
 editor.addEventListener('input', () => {
@@ -177,6 +195,11 @@ editor.addEventListener('keydown', (event) => {
 // by default, editor is disabled until a user selects a file
 editor.disabled = true;
 
+/**
+ * =======================================
+ *             FILE EXPLORER
+ * =======================================
+ */
 const fileList = document.getElementById('fileList');
 // list all MD files and update in real time when files are added or removed or renamed
 const listMDFiles = () => {
@@ -241,4 +264,36 @@ fs.watch('./src', (eventType, filename) => {
   }
 });
 
+/**
+ * ===========================================================
+ *              EVENT LISTENERS FOR FILE EXPLORER
+ * ===========================================================
+ */
+
+// hold a reference to contextMenuNoteList and ensure that the scope is noteList
+const contextMenuNoteList = document.getElementById('contextMenuNoteList');
+const noteList = document.getElementById('noteList');
+
+// Upon right click on a file in the list, show the context menu at the mouse position
+noteList.addEventListener('contextmenu', (event) => {
+  const { target } = event;
+  if (target.tagName === 'SPAN') {
+    event.preventDefault();
+
+    const { clientX: mouseX, clientY: mouseY } = event;
+    contextMenuNoteList.style.top = `${mouseY}px`;
+    contextMenuNoteList.style.left = `${mouseX}px`;
+
+    contextMenuNoteList.classList.add('visible');
+  }
+});
+
+// If the user clicks outside the context menu, hide it
+document.addEventListener('click', (event) => {
+  if (event.target.offsetParent != contextMenuNoteList) {
+    contextMenuNoteList.classList.remove('visible');
+  }
+});
+
+// List MD files upon page load
 listMDFiles();
