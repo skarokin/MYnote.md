@@ -21,6 +21,12 @@ const md = require('markdown-it')({
     errorColor: '#cc0000'
 });
 
+/**
+ * =======================================
+ *           MARKDOWN RENDERING
+ * =======================================
+ */
+
 const editor = document.getElementById('editor');
 const outputField = document.getElementById('outputField');
 let selectedFilePath = null;      // store the currently selected Markdown file path
@@ -36,6 +42,12 @@ const renderMarkdown = () => {
     outputField.innerHTML = renderedHTML;
   }, 300); // 300 ms delay to optimize rendering performance
 };
+
+/**
+ * =======================================
+ *             FILE WATCHING
+ * =======================================
+ */
 
 // Function to handle file changes
 const handleFileChange = (eventType, filename) => {
@@ -83,7 +95,11 @@ const saveMarkdownToFile = () => {
   },300);
 };
 
-// CODE BLOCK IMPLEMENTATION
+/**
+ * =============================================================================
+ *           EVENT LISTENERS FOR MARKDOWN RENDERING AND FILE WATCHING
+ * =============================================================================
+ */
 
 // Add event listener to the editor for input changes
 editor.addEventListener('input', () => {
@@ -176,17 +192,20 @@ editor.addEventListener('keydown', (event) => {
   }
 });
 
-// FILE EXPLORER
-
 // by default, editor is disabled until a user selects a file
 editor.disabled = true;
 
+/**
+ * =======================================
+ *             FILE EXPLORER
+ * =======================================
+ */
 const fileList = document.getElementById('fileList');
 // list all MD files and update in real time when files are added or removed or renamed
 const listMDFiles = () => {
-  const directoryName = './src' // name of dir for files
+  const directoryName = './src'
   fs.readdir(directoryName, (err, files) => {
-    if (err) { // exception handling
+    if (err) {
       console.error(err);
       return;
     }
@@ -195,47 +214,12 @@ const listMDFiles = () => {
       if (file.endsWith('.md')) {
         const li = document.createElement('li');
         const span = document.createElement('span');
-        const delButton = document.createElement('i');
-        const bigContainer = document.createElement('div');
-
         span.textContent = file;
         span.dataset.filePath = path.join(directoryName, file);
-
-        delButton.setAttribute('class', 'fa fa-minus-square-o');
-        delButton.setAttribute('aria-hidden', 'true');
-        delButton.setAttribute('id', 'del-btn');
-        let delPath = directoryName + "/" + file;
-
-        delButton.addEventListener('click', function(event) {
-          if (event.target.id === 'del-btn') {
-            if (selectedFilePath === span.dataset.filePath) {
-              editor.value = ''
-              renderMarkdown();
-              stopFileWatching();
-            }
-            fs.unlinkSync(delPath)
-          }
-        });
-
-        delButton.addEventListener('mouseover', function() {
-          this.setAttribute('class', 'fa fa-minus-square');
-        })
-
-        delButton.addEventListener('mouseout', function() {
-          this.setAttribute('class', 'fa fa-minus-square-o');
-        })
-        function changeClass() {
-          document.getElementById("del-btn").className = "open";
-        }
-
-        bigContainer.appendChild(span);
-        bigContainer.appendChild(delButton);
-
         if (selectedFilePath === span.dataset.filePath) {       // if selectedFilePath is equal to the current file path, add the selected class
           span.classList.add('selected');
         }
-
-        li.appendChild(bigContainer);
+        li.appendChild(span);
         fileList.appendChild(li);
       }
     });
@@ -280,4 +264,36 @@ fs.watch('./src', (eventType, filename) => {
   }
 });
 
+/**
+ * ===========================================================
+ *              EVENT LISTENERS FOR FILE EXPLORER
+ * ===========================================================
+ */
+
+// hold a reference to contextMenuNoteList and ensure that the scope is noteList
+const contextMenuNoteList = document.getElementById('contextMenuNoteList');
+const noteList = document.getElementById('noteList');
+
+// Upon right click on a file in the list, show the context menu at the mouse position
+noteList.addEventListener('contextmenu', (event) => {
+  const { target } = event;
+  if (target.tagName === 'SPAN') {
+    event.preventDefault();
+
+    const { clientX: mouseX, clientY: mouseY } = event;
+    contextMenuNoteList.style.top = `${mouseY}px`;
+    contextMenuNoteList.style.left = `${mouseX}px`;
+
+    contextMenuNoteList.classList.add('visible');
+  }
+});
+
+// If the user clicks outside the context menu, hide it
+document.addEventListener('click', (event) => {
+  if (event.target.offsetParent != contextMenuNoteList) {
+    contextMenuNoteList.classList.remove('visible');
+  }
+});
+
+// List MD files upon page load
 listMDFiles();
