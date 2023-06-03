@@ -89,7 +89,7 @@ const saveMarkdownToFile = () => {
           console.error(err);
           return;
         }
-        console.log('File saved successfully!');
+        console.log(`File saved successfully to ${selectedFilePath}`);
       });
     }
   },300);
@@ -286,17 +286,6 @@ contextMenuNoteList.addEventListener('click', (event) => {
     targetSpan.contentEditable = true;
     targetSpan.focus();
 
-    // After clicking rename, if user clicks outside of the rename box, revert the rename
-    noteList.onclick = (event) => {
-      event.preventDefault();
-      if (event.target !== targetSpan) {
-        targetSpan.textContent = previousName;
-        targetSpan.contentEditable = false;
-        targetSpan.onkeydown = null;
-        targetSpan.blur();
-        console.log(`Cancelled renaming of ${targetFilePath}`);
-      }
-    }
     targetSpan.onkeydown = (event) => {
       // Enter to confirm rename
       if (event.key === 'Enter') {
@@ -312,7 +301,7 @@ contextMenuNoteList.addEventListener('click', (event) => {
         targetSpan.contentEditable = false;
         targetSpan.onkeydown = null;
         targetSpan.blur();
-        console.log(`Cancelled renaming of ${targetFilePath}`);
+        console.log(`Cancelled renaming of ${targetFilePath} successfully`);
       }    
     }
   }
@@ -349,7 +338,7 @@ const renameFile = (newName, filePath) => {
     }
     listMDFiles();
   });
-  console.log(`Successfuly renamed ${filePath} to ${newName}.md`);
+  console.log(`Renamed ${filePath} to ${newName}.md successfully`);
 };
 
 // List MD files upon page load
