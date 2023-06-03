@@ -323,7 +323,6 @@ const deleteFile = (filePath) => {
       return;
     }
     console.log(`Deleted ${filePath} successfully`);
-    listMDFiles();
   });
 };
 
@@ -336,7 +335,6 @@ const renameFile = (newName, filePath) => {
       console.error(err);
       return;
     }
-    listMDFiles();
   });
   console.log(`Renamed ${filePath} to ${newName}.md successfully`);
 };
