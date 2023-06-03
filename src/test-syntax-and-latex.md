@@ -2,7 +2,7 @@
 ---
 $$\sum_{k = 1}^n \frac{1}{k(k + 1)} = \frac{n}{n + 1}$$
 
-# Syntax Highlighing Test
+# Syntax Highlighting Test
 ---
 ```py
 class Solution:

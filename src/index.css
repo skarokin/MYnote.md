@@ -17,6 +17,9 @@
   --interactive-accent: #50fa7b;
   --blockquote-border: #b294bb;
   --interactive-accent-rgb: #f1fa8c;
+  --menu-background: #3f4355; 
+  --menu-border: #575b6d;
+  --menu-selected: #7d86b3;
 }
 
 body {
@@ -133,8 +136,20 @@ a:visited {
   color: var(--text-a);
 }
 
-#noteList .selected {
-  background-color: var(--blockquote-border);
+#noteList {
+  background: var(--menu-background);
+  border: 1px solid var(--menu-border);
+  border-radius: 5px;
+  padding: 5px;
+  margin: 25px 25px;
+}
+
+#fileList {
+  margin: 25px 25px;
+}
+
+#fileList .selected {
+  background-color: var(--menu-selected);
   border-radius: 5px;
   padding: 4px 6px;
 }
@@ -156,8 +171,11 @@ a:visited {
   position: fixed;
   z-index: 10000;
   width: 150px;
-  background: var(--blockquote-border);
-  border-radius: 5px;
+  line-height: 1.4;
+  padding: 3px 3px;
+  border-radius: 4px;
+  border: 1px solid var(--menu-border);
+  background-color: var(--menu-background);
   display: none;
 }
 
@@ -166,18 +184,23 @@ a:visited {
 }
 
 #contextMenuNoteList .contextMenuNoteListItem{
-  padding: 8px 10px;
-  font-size: 15px;
+  padding: 3px 8px;
   color: var(--text-normal);
   cursor: pointer;
-  border-radius: 5px;
-  border-top: none;
+  border-radius: 4px;
+  transition: all 0.15s ease-in-out;
+  list-style: none;
+  display: flex;
+  align-items: center;
 }
 
-#contextMenuNoteList .contextMenuNoteListItem:first-child {
-  border-top: 5px;
+#contextMenuNoteList svg {
+  margin-right: 10px;
+  fill: var(--text-normal);
+  width: 20px;
+  height: 20px; 
 }
 
 #contextMenuNoteList .contextMenuNoteListItem:hover {
-  background: var(--background-code);
+  background: var(--menu-selected);
 }
