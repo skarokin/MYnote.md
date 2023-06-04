@@ -89,7 +89,7 @@ const saveMarkdownToFile = () => {
           console.error(err);
           return;
         }
-        console.log('File saved successfully!');
+        console.log(`File saved successfully to ${selectedFilePath}`);
       });
     }
   },300);
@@ -107,24 +107,6 @@ editor.addEventListener('input', () => {
   saveMarkdownToFile();
 });
 
-// Add event listener for tab key press
-editor.addEventListener('keydown', (event) => {
-  if (event.key === 'Tab') {
-    event.preventDefault();               // Prevent tabbing out of the editor upon pressing tab
-
-    const { selectionStart, selectionEnd } = editor;
-
-    // Insert a tab character at the current cursor position
-    const tabCharacter = '    ';
-    const newText = editor.value.substring(0, selectionStart) + tabCharacter + editor.value.substring(selectionEnd);
-
-    // Update the textarea value with the new text and adjust the cursor position
-    editor.value = newText;
-    editor.selectionStart = editor.selectionEnd = selectionStart + tabCharacter.length;
-    renderMarkdown();
-    saveMarkdownToFile();
-  }
-});
 
 // Map of closing characters
 const closingCharactersMap = {
@@ -137,48 +119,36 @@ const closingCharactersMap = {
   '_': '_',
 };
 
-// Add event listener for auto-closing characters defined in closingCharactersMap
+// Add event listener for tab, auto-close, auto-indent, remove auto-indent
 editor.addEventListener('keydown', (event) => {
   const { key } = event;
-  const closingBracket = closingCharactersMap[key];
-  
-  if (closingBracket) {
+  const { selectionStart, selectionEnd, value } = editor;
+
+  if (event.key === 'Tab') {
     event.preventDefault();
-    const { selectionStart, selectionEnd } = editor;
-
-    // Insert the closing bracket at the current cursor position
-    const newText = editor.value.substring(0, selectionStart) + key + closingBracket + editor.value.substring(selectionEnd);
-
-    // Update the textarea value with the new text and adjust the cursor position
-    editor.value = newText;
-    editor.selectionStart = editor.selectionEnd = selectionStart + closingBracket.length;
-    renderMarkdown();
-    saveMarkdownToFile();
-  }
-});
-
-// Add event listener for enter key press to maintain indentation
-editor.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    const { value, selectionStart } = editor;
-    const currentLine = value.substr(0, selectionStart).split('\n').pop();
-    const indentation = /^\s*/.exec(currentLine)[0];
-    const newText = `\n${indentation}`;
-    editor.setRangeText(newText, selectionStart, selectionStart, 'end');
-    renderMarkdown();
-    saveMarkdownToFile();
-  }
-});
-
-// Add event listener for backspace key press to remove indentation
-editor.addEventListener('keydown', (event) => {
-  if (event.key === 'Backspace') {
-    const { value, selectionStart } = editor;
-    const currentLine = value.substr(0, selectionStart).split('\n').pop();
-    const indentation = currentLine === '' ? '' : /^ +/.exec(currentLine)[0];
-    const tabSize = 4; // tab size is 4 spaces
-    // if indentation is a multiple of tab size, and everything preceding the cursor is a space, remove indentation
+    const start = selectionStart;
+    const end = selectionEnd;
+    const tabCharacter = '    ';
+    editor.value = value.substring(0, start) + tabCharacter + value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 4;
+  } else if (key in closingCharactersMap) {
+      event.preventDefault();
+      const closingCharacter = closingCharactersMap[key];
+      const newText = value.substring(0, selectionStart) + key + closingCharacter + value.substring(selectionEnd);
+      editor.value = newText;
+      editor.selectionStart = editor.selectionEnd = selectionStart + 1;
+  } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const currentLine = value.substr(0, selectionStart).split('\n').pop();
+      const indentation = /^\s*/.exec(currentLine)[0];
+      const newText = `\n${indentation}`;
+      editor.setRangeText(newText, selectionStart, selectionStart, 'end');
+  } else if (event.key === 'Backspace') {
+      const lastNewlineIndex = value.lastIndexOf('\n', selectionStart - 1);
+      const currentLine = lastNewlineIndex === -1 ? value.substring(0, selectionStart) : value.substring(lastNewlineIndex + 1, selectionStart);
+      const indentationMatch = /^ +/.exec(currentLine);
+      const indentation = indentationMatch ? indentationMatch[0] : '';
+      const tabSize = 4;
     if (indentation.length % tabSize === 0 && indentation.length > 0 && /^ +$/.test(currentLine.substring(0, selectionStart))) {
       event.preventDefault();
       const prevIndentation = indentation.slice(0, -tabSize);
@@ -187,9 +157,10 @@ editor.addEventListener('keydown', (event) => {
       editor.setRangeText(newText, selectionStart - currentLine.length, selectionStart, 'end');
       editor.selectionStart = editor.selectionEnd = newSelectionStart;
     }
-    renderMarkdown();
-    saveMarkdownToFile();
   }
+
+  renderMarkdown();
+  saveMarkdownToFile();
 });
 
 // by default, editor is disabled until a user selects a file
@@ -200,6 +171,7 @@ editor.disabled = true;
  *             FILE EXPLORER
  * =======================================
  */
+
 const fileList = document.getElementById('fileList');
 // list all MD files and update in real time when files are added or removed or renamed
 const listMDFiles = () => {
@@ -275,24 +247,153 @@ const contextMenuNoteList = document.getElementById('contextMenuNoteList');
 const noteList = document.getElementById('noteList');
 
 // Upon right click on a file in the list, show the context menu at the mouse position
+// Handle the case when user clicks certain options in the context menu
+let targetFilePath;
+let targetSpan;
 noteList.addEventListener('contextmenu', (event) => {
   const { target } = event;
   if (target.tagName === 'SPAN') {
     event.preventDefault();
 
+    // Store the mouse position
     const { clientX: mouseX, clientY: mouseY } = event;
     contextMenuNoteList.style.top = `${mouseY}px`;
     contextMenuNoteList.style.left = `${mouseX}px`;
 
+    // Show the context menu at the mouse position
     contextMenuNoteList.classList.add('visible');
+
+    // Store the file path of selected file
+    targetFilePath = target.dataset.filePath;
+    targetSpan = target;
   }
 });
 
-// If the user clicks outside the context menu, hide it
+// Listen for the certain option that the user clicks in the context menu
+contextMenuNoteList.addEventListener('click', (event) => {
+  const { target } = event;
+  const previousName = targetSpan.textContent;
+
+  if (target.id === 'deleteOption') {
+    event.preventDefault();
+    contextMenuNoteList.classList.remove('visible');
+
+    deleteFile(targetFilePath);
+  } else if (target.id === 'renameOption') {
+    event.preventDefault();
+    contextMenuNoteList.classList.remove('visible');
+
+    targetSpan.contentEditable = true;
+    targetSpan.focus();
+
+    targetSpan.onkeydown = (event) => {
+      // Enter to confirm rename
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        targetSpan.contentEditable = false;
+        targetSpan.onkeydown = null;
+        targetSpan.blur();
+        renameFile(targetSpan.textContent, targetFilePath);
+        // Escape to cancel rename
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        targetSpan.textContent = previousName;
+        targetSpan.contentEditable = false;
+        targetSpan.onkeydown = null;
+        targetSpan.blur();
+        console.log(`Cancelled renaming of ${targetFilePath} successfully`);
+      }    
+    }
+  }
+});
+
+// If context menu is visible and user clicks outside of it, hide it
 document.addEventListener('click', (event) => {
-  if (event.target.offsetParent != contextMenuNoteList) {
+  if (event.target.offsetParent != contextMenuNoteList && contextMenuNoteList.classList.contains('visible')) {
     contextMenuNoteList.classList.remove('visible');
   }
+});
+
+// When user opens context menu for a file, delete file when they click "Delete" 
+// If the file to delete is selectedFilePath, reset to default app state
+const deleteFile = (filePath) => {
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log(`Deleted ${filePath} successfully`);
+  });
+  if (filePath === selectedFilePath) {
+    stopFileWatching();
+    selectedFilePath = '';
+    editor.value = '';
+    editor.disabled = true;
+    renderMarkdown();
+  }
+};
+
+// When user opens context menu for a file, rename file when they click "Rename"
+// If the file to rename is selectedFilePath, restart file watching for smart updates
+// Allow user to rename file by changing the name in the noteList
+const renameFile = (newName, filePath) => {
+  const newFilePath = path.join('./src', `${newName}.md`);
+  fs.rename(filePath, newFilePath, (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  });
+  if (filePath === selectedFilePath) {
+    stopFileWatching();
+    selectedFilePath = newFilePath;
+    startFileWatching();
+    editor.focus();
+  }
+  console.log(`Renamed ${filePath} to ${newName}.md successfully`);
+};
+
+// Add a new file, automatically calling it "Untitled-0.md"
+// If "Untitled-0.md" already exists, make "Untitled-1.md" and so on
+// Add a delay between each file creation to ensure bug-free
+const addFile = () => {
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => {
+    const newFileName = 'Untitled-';
+    let newFilePath = '';
+    let numUntitledFiles = 0;
+
+    // Find the last file starting with "Untitled-" and find its number using async node fs
+    fs.readdir('./src', (err, files) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      
+      files.forEach((file) => {
+        if (file.startsWith(newFileName)) {
+          const fileNumber = parseInt(file.slice(newFileName.length)) || 0;
+          numUntitledFiles = Math.max(numUntitledFiles, fileNumber + 1);
+        }
+      });
+
+      newFilePath = path.join('./src', `${newFileName}${numUntitledFiles}.md`);
+
+      fs.writeFile(newFilePath, '', (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Created ${newFilePath} successfully`);
+      });
+    });
+  }, 100);
+};
+
+// Upon clicking the newNote div, add a new note and automatically select it and let user rename it
+const newNote = document.getElementById('newNote');
+newNote.addEventListener('click', () => {
+  addFile();
 });
 
 // List MD files upon page load

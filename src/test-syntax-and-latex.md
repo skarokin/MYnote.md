@@ -2,7 +2,7 @@
 ---
 $$\sum_{k = 1}^n \frac{1}{k(k + 1)} = \frac{n}{n + 1}$$
 
-# Syntax Highlighing Test
+# Syntax Highlighting Test
 ---
 ```py
 class Solution:
@@ -15,7 +15,7 @@ class Solution:
         front_pointer = 0
         tail_pointer = 0
 
-        # initialize currentSum
+        # initialize current sum
         current_sum = 0
 
         # while front is in range, find current sum and increase window size (increment front)
