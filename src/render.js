@@ -315,7 +315,7 @@ document.addEventListener('click', (event) => {
 });
 
 // When user opens context menu for a file, delete file when they click "Delete" 
-// If the file to delete is selectedFilePath, stop file watching
+// If the file to delete is selectedFilePath, reset to default app state
 const deleteFile = (filePath) => {
   fs.unlink(filePath, (err) => {
     if (err) {
@@ -324,20 +324,77 @@ const deleteFile = (filePath) => {
     }
     console.log(`Deleted ${filePath} successfully`);
   });
+  if (filePath === selectedFilePath) {
+    stopFileWatching();
+    selectedFilePath = '';
+    editor.value = '';
+    editor.disabled = true;
+    renderMarkdown();
+  }
 };
 
 // When user opens context menu for a file, rename file when they click "Rename"
 // If the file to rename is selectedFilePath, restart file watching for smart updates
 // Allow user to rename file by changing the name in the noteList
 const renameFile = (newName, filePath) => {
-  fs.rename(filePath, path.join('./src', `${newName}.md`), (err) => {
+  const newFilePath = path.join('./src', `${newName}.md`);
+  fs.rename(filePath, newFilePath, (err) => {
     if (err) {
       console.error(err);
       return;
     }
   });
+  if (filePath === selectedFilePath) {
+    stopFileWatching();
+    selectedFilePath = newFilePath;
+    startFileWatching();
+    editor.focus();
+  }
   console.log(`Renamed ${filePath} to ${newName}.md successfully`);
 };
+
+// Add a new file, automatically calling it "Untitled-0.md"
+// If "Untitled-0.md" already exists, make "Untitled-1.md" and so on
+// Add a delay between each file creation to ensure bug-free
+const addFile = () => {
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => {
+    const newFileName = 'Untitled-';
+    let newFilePath = '';
+    let numUntitledFiles = 0;
+
+    // Find the last file starting with "Untitled-" and find its number using async node fs
+    fs.readdir('./src', (err, files) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      
+      files.forEach((file) => {
+        if (file.startsWith(newFileName)) {
+          const fileNumber = parseInt(file.slice(newFileName.length)) || 0;
+          numUntitledFiles = Math.max(numUntitledFiles, fileNumber + 1);
+        }
+      });
+
+      newFilePath = path.join('./src', `${newFileName}${numUntitledFiles}.md`);
+
+      fs.writeFile(newFilePath, '', (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Created ${newFilePath} successfully`);
+      });
+    });
+  }, 100);
+};
+
+// Upon clicking the newNote div, add a new note and automatically select it and let user rename it
+const newNote = document.getElementById('newNote');
+newNote.addEventListener('click', () => {
+  addFile();
+});
 
 // List MD files upon page load
 listMDFiles();

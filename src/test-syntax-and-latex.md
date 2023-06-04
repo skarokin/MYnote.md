@@ -15,7 +15,7 @@ class Solution:
         front_pointer = 0
         tail_pointer = 0
 
-        # initialize currentSum
+        # initialize current sum
         current_sum = 0
 
         # while front is in range, find current sum and increase window size (increment front)
