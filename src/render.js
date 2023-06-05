@@ -40,7 +40,22 @@ const renderMarkdown = () => {
     const markdownText = editor.value;
     const renderedHTML = md.render(markdownText);
     outputField.innerHTML = renderedHTML;
+    restoreSelection();
   }, 300); // 300 ms delay to optimize rendering performance
+};
+
+let editorSelectionStart;
+let editorSelectionEnd;
+// Function to save the current selection
+const saveSelection = () => {
+  editorSelectionStart = editor.selectionStart;
+  editorSelectionEnd = editor.selectionEnd;
+};
+
+// Function to restore the saved selection
+const restoreSelection = () => {
+  editor.selectionStart = editorSelectionStart;
+  editor.selectionEnd = editorSelectionEnd;
 };
 
 /**
@@ -60,14 +75,15 @@ const handleFileChange = (eventType, filename) => {
       }
       editor.value = data;
       renderMarkdown();
-      editor.disabled = false;
     });
   }
 };
 
 // Function to start file watching
+// If file watching is triggered, enable editor
 const startFileWatching = () => {
   fileWatcher = fs.watch(path.dirname(selectedFilePath), handleFileChange);
+  editor.disabled = false;
 };
 
 // Function to stop file watching
@@ -89,7 +105,6 @@ const saveMarkdownToFile = () => {
           console.error(err);
           return;
         }
-        console.log(`File saved successfully to ${selectedFilePath}`);
       });
     }
   },300);
@@ -103,10 +118,9 @@ const saveMarkdownToFile = () => {
 
 // Add event listener to the editor for input changes
 editor.addEventListener('input', () => {
-  renderMarkdown();
+  saveSelection();
   saveMarkdownToFile();
 });
-
 
 // Map of closing characters
 const closingCharactersMap = {
@@ -158,8 +172,7 @@ editor.addEventListener('keydown', (event) => {
       editor.selectionStart = editor.selectionEnd = newSelectionStart;
     }
   }
-
-  renderMarkdown();
+  saveSelection();
   saveMarkdownToFile();
 });
 
@@ -215,7 +228,7 @@ fileList.addEventListener('click', (event) => {
           return;
         }
         editor.value = data;
-        renderMarkdown();
+        renderMarkdown();     // render Markdown content initially upon loading the file
         startFileWatching();
         editor.disabled = false;
       });
@@ -303,6 +316,7 @@ contextMenuNoteList.addEventListener('click', (event) => {
         targetSpan.blur();
         console.log(`Cancelled renaming of ${targetFilePath} successfully`);
       }    
+      editor.focus();
     }
   }
 });
@@ -348,7 +362,6 @@ const renameFile = (newName, filePath) => {
     stopFileWatching();
     selectedFilePath = newFilePath;
     startFileWatching();
-    editor.focus();
   }
   console.log(`Renamed ${filePath} to ${newName}.md successfully`);
 };
@@ -363,7 +376,7 @@ const addFile = () => {
     let newFilePath = '';
     let numUntitledFiles = 0;
 
-    // Find the last file starting with "Untitled-" and find its number using async node fs
+    // Find the last file starting with "Untitled-" and find its number
     fs.readdir('./src', (err, files) => {
       if (err) {
         console.error(err);
@@ -386,6 +399,7 @@ const addFile = () => {
         }
         console.log(`Created ${newFilePath} successfully`);
       });
+
     });
   }, 100);
 };
@@ -395,6 +409,12 @@ const newNote = document.getElementById('newNote');
 newNote.addEventListener('click', () => {
   addFile();
 });
+
+// Upon clicking the newFolder div, add a new folder and automatically select it and let user rename it
+const newFolder = document.getElementById('newFolder');
+newFolder.addEventListener('click', () => {
+  addFolder();
+})
 
 // List MD files upon page load
 listMDFiles();
