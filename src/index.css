@@ -201,15 +201,33 @@ a:visited {
   height: 20px; 
 }
 
-#newNote svg {  
-  margin-right: 10px;
-  fill: var(--text-normal);
-  width: 30px;
-  height: auto;
-  cursor: pointer;
+#contextMenuNoteList .contextMenuNoteListItem:hover {
+  background: var(--menu-selected);
+}
+
+#noteListButtons {
+  display: flex;
+  justify-content: space-evenly;
   align-items: center;
 }
 
-#contextMenuNoteList .contextMenuNoteListItem:hover {
-  background: var(--menu-selected);
+#newNote,
+#newFolder {
+  padding-top: 10px;
+  display: inline-block; /* Set display to inline-block */
+  cursor: pointer;
+  line-height: 0;
+}
+
+#newNote svg,
+#newFolder svg {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  line-height: normal;
+}
+
+.code-language {
+  position: relative;
+  padding: 0.25em 0.5em;
 }
