@@ -8,7 +8,10 @@ const md = require('markdown-it')({
   highlight: function (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return hljs.highlight(str, { language: lang }).value;
+        // Add the programming language as a flair before the highlighted code
+        const codeFlair = `<div class="code-flair">${lang}</div>`;
+        const highlightedCode = hljs.highlight(str, { language: lang }).value;
+        return `${codeFlair}${highlightedCode}`;
       } catch (__) {}
     }
     return ''; // use external default escaping
@@ -40,22 +43,8 @@ const renderMarkdown = () => {
     const markdownText = editor.value;
     const renderedHTML = md.render(markdownText);
     outputField.innerHTML = renderedHTML;
-    restoreSelection();
   }, 300); // 300 ms delay to optimize rendering performance
-};
-
-let editorSelectionStart;
-let editorSelectionEnd;
-// Function to save the current selection
-const saveSelection = () => {
-  editorSelectionStart = editor.selectionStart;
-  editorSelectionEnd = editor.selectionEnd;
-};
-
-// Function to restore the saved selection
-const restoreSelection = () => {
-  editor.selectionStart = editorSelectionStart;
-  editor.selectionEnd = editorSelectionEnd;
+  console.log('Rendered Markdown to outputField');
 };
 
 /**
@@ -73,8 +62,12 @@ const handleFileChange = (eventType, filename) => {
         console.error(err);
         return;
       }
-      editor.value = data;
-      renderMarkdown();
+      // If loaded file contents is not equal to data, indicates a change in the file
+      if (editor.value !== data) {
+        editor.value = data;
+        console.log('updated editor');
+        renderMarkdown(); // Render Markdown after updating the editor
+      }
     });
   }
 };
@@ -105,22 +98,22 @@ const saveMarkdownToFile = () => {
           console.error(err);
           return;
         }
+        renderMarkdown(); // Render Markdown after saving the file
       });
     }
-  },300);
+  }, 300);
 };
+
+// Add event listener to the editor for input changes
+editor.addEventListener('input', () => {
+  saveMarkdownToFile();
+});
 
 /**
  * =============================================================================
  *           EVENT LISTENERS FOR MARKDOWN RENDERING AND FILE WATCHING
  * =============================================================================
  */
-
-// Add event listener to the editor for input changes
-editor.addEventListener('input', () => {
-  saveSelection();
-  saveMarkdownToFile();
-});
 
 // Map of closing characters
 const closingCharactersMap = {
@@ -145,18 +138,21 @@ editor.addEventListener('keydown', (event) => {
     const tabCharacter = '    ';
     editor.value = value.substring(0, start) + tabCharacter + value.substring(end);
     editor.selectionStart = editor.selectionEnd = start + 4;
+    saveMarkdownToFile();
   } else if (key in closingCharactersMap) {
       event.preventDefault();
       const closingCharacter = closingCharactersMap[key];
       const newText = value.substring(0, selectionStart) + key + closingCharacter + value.substring(selectionEnd);
       editor.value = newText;
       editor.selectionStart = editor.selectionEnd = selectionStart + 1;
+      saveMarkdownToFile();
   } else if (event.key === 'Enter') {
       event.preventDefault();
       const currentLine = value.substr(0, selectionStart).split('\n').pop();
       const indentation = /^\s*/.exec(currentLine)[0];
       const newText = `\n${indentation}`;
       editor.setRangeText(newText, selectionStart, selectionStart, 'end');
+      saveMarkdownToFile();
   } else if (event.key === 'Backspace') {
       const lastNewlineIndex = value.lastIndexOf('\n', selectionStart - 1);
       const currentLine = lastNewlineIndex === -1 ? value.substring(0, selectionStart) : value.substring(lastNewlineIndex + 1, selectionStart);
@@ -171,9 +167,8 @@ editor.addEventListener('keydown', (event) => {
       editor.setRangeText(newText, selectionStart - currentLine.length, selectionStart, 'end');
       editor.selectionStart = editor.selectionEnd = newSelectionStart;
     }
+    saveMarkdownToFile();
   }
-  saveSelection();
-  saveMarkdownToFile();
 });
 
 // by default, editor is disabled until a user selects a file
@@ -307,6 +302,7 @@ contextMenuNoteList.addEventListener('click', (event) => {
         targetSpan.onkeydown = null;
         targetSpan.blur();
         renameFile(targetSpan.textContent, targetFilePath);
+        editor.focus();
         // Escape to cancel rename
       } else if (event.key === 'Escape') {
         event.preventDefault();
@@ -315,8 +311,8 @@ contextMenuNoteList.addEventListener('click', (event) => {
         targetSpan.onkeydown = null;
         targetSpan.blur();
         console.log(`Cancelled renaming of ${targetFilePath} successfully`);
+        editor.focus();
       }    
-      editor.focus();
     }
   }
 });
@@ -376,7 +372,7 @@ const addFile = () => {
     let newFilePath = '';
     let numUntitledFiles = 0;
 
-    // Find the last file starting with "Untitled-" and find its number
+    // Find all files starting with "Untitled-" and find the largest number
     fs.readdir('./src', (err, files) => {
       if (err) {
         console.error(err);
@@ -413,8 +409,8 @@ newNote.addEventListener('click', () => {
 // Upon clicking the newFolder div, add a new folder and automatically select it and let user rename it
 const newFolder = document.getElementById('newFolder');
 newFolder.addEventListener('click', () => {
-  addFolder();
-})
+  addFolder();        // not functional yet
+});
 
 // List MD files upon page load
 listMDFiles();
