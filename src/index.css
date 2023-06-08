@@ -23,13 +23,14 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
-  max-width: 38rem;
+  width: 60rem;
   padding: 2rem;
   background-color: var(--background);
   color: var(--text-normal);
+  display: flex; /* Use flex display for the body */
+  justify-content: center; /* Center the divs horizontally */
 }
 
 h1 {
@@ -57,36 +58,48 @@ h6 {
 }
 
 /* custom scrollbar */
-#editor::-webkit-scrollbar {
+#editor::-webkit-scrollbar, #outputField::-webkit-scrollbar {
   width: 5px;
 }
 
-#editor::-webkit-scrollbar-track {
+#editor::-webkit-scrollbar-track, #outputField::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
-#editor::-webkit-scrollbar-thumb {
+#editor::-webkit-scrollbar-thumb, #outputField::-webkit-scrollbar-thumb {
   background-color: #888;
   border-radius: 5px;
   min-height: 50px;
 }
 
-#editor::-webkit-scrollbar-thumb:hover {
+#editor::-webkit-scrollbar-thumb:hover, #outputField::-webkit-scrollbar-thumb:hover {
   background-color: #555;
 }
 
+/* editor and output fields */
+#contentField {
+  display: flex;
+  justify-content: center;
+  padding: 2rem; /* Adjust the padding value as needed */
+}
+
 #editor {
+  flex: 1;
   border: transparent;
   outline: none;
   font-family: 'Ubuntu', monospace;
   font-size: 24px;
-  height: 200px;
-  width: 800px;
-  overflow: hidden;
   overflow-y: scroll;
   color: var(--text-normal);
   background-color: transparent;
   resize: none;
+  margin-right: 10px;
+}
+
+#outputField {
+  flex: 1;
+  margin-right: 10px;
+  overflow-y: scroll;
 }
 
 /* for code blocks */
@@ -113,12 +126,7 @@ p code, li code {
   border-radius: 3px;
 }
 
-#outputField {
-  margin: auto;
-  max-width: 38rem;
-  padding: 2rem;
-  position: relative;
-}
+/* links */
 
 a {
   color: var(--text-link);
@@ -136,16 +144,23 @@ a:visited {
   color: var(--text-a);
 }
 
+/* file explorer (*/
 #noteList {
+  position: fixed;
+  top: 50px; /* Adjust the top position as per your preference */
+  left: 25px; /* Adjust the left position as per your preference */
+  width: 200px; /* Adjust the width as per your preference */
+  height: calc(100vh - 100px); /* Adjust the height as per your preference */
   background: var(--menu-background);
   border: 1px solid var(--menu-border);
   border-radius: 5px;
   padding: 5px;
-  margin: 25px 25px;
+  overflow-y: auto; /* Enable vertical scrolling if content exceeds the height */
+  overflow-x: hidden;
 }
 
 #fileList {
-  margin: 25px 25px;
+  margin: 20px 0px 20px 10px;
 }
 
 #fileList .selected {
@@ -164,9 +179,12 @@ a:visited {
   padding-left: 30px;
   margin: 10px;
   cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-/* context menu upon right click on noteList to display delete and rename*/
+/* context menu */
 #contextMenuNoteList {
   position: fixed;
   z-index: 10000;
@@ -227,7 +245,13 @@ a:visited {
   line-height: normal;
 }
 
-.code-language {
+/* display code flair on top right of code blocks */
+.code-flair {
+  display: inline-block;
   position: relative;
-  padding: 0.25em 0.5em;
+  top: 0;
+  left: 95%;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-weight: bold;
 }
