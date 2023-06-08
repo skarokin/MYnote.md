@@ -5,16 +5,16 @@ MYnote.md is a minimalist Markdown note taking app made in Electron.js for writi
 The name and theme is inspired by K-pop group aespa, and their mini-album "MY WORLD"
 
 ### Features
-- Live preview of Markdown content
+- Source mode + Reading mode (Toggle with `Ctrl/Cmd + E`) to combine WYSIWYM and WYSIWYG 
 - Syntax highlighting
 - LaTeX support 
 - Dracula-inspired color theme
 - Store notes locally as .md files and organize them in folders
+- Scroll position is saved when toggling between Source mode and Reading mode
 - Customizable styling via modifying the included CSS file `index.css`
 - Responsive document outline
 - Easily export notes as .pdf files
 - Quickly search for notes, or quickly search for keywords within notes
-- Efficient dynamic rendering of Markdown
 
 ### Dependencies
 MYnote.md relies on the following as dependencies:
