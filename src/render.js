@@ -33,7 +33,6 @@ const md = require('markdown-it')({
 const editor = document.getElementById('editor');
 const outputField = document.getElementById('outputField');
 let selectedFilePath = null;      // store the currently selected Markdown file path
-let fileWatcher = null;
 
 let timeoutId = null;
 // Function to render the Markdown content
@@ -44,7 +43,7 @@ const renderMarkdown = () => {
     const renderedHTML = md.render(markdownText);
     outputField.innerHTML = renderedHTML;
   }, 300); // 300 ms delay to optimize rendering performance
-  console.log('Rendered Markdown to outputField');
+  console.log(`Rendered Markdown from editor to outputField`);
 };
 
 /**
@@ -53,8 +52,10 @@ const renderMarkdown = () => {
  * =======================================
  */
 
-// Function to handle file changes
-const handleFileChange = (eventType, filename) => {
+// Function to load file upon file selection
+const loadFileOnSelection = (eventType, filename) => {
+  editor.disabled = false;
+  console.log(`Loaded Markdown content from ${selectedFilePath}`);
   if (filename === path.basename(selectedFilePath)) {
     fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
       if (err) {
@@ -62,28 +63,10 @@ const handleFileChange = (eventType, filename) => {
         console.error(err);
         return;
       }
-      // If loaded file contents is not equal to data, indicates a change in the file
-      if (editor.value !== data) {
-        editor.value = data;
-        console.log('updated editor');
-        renderMarkdown(); // Render Markdown after updating the editor
-      }
+      // Load Markdown content from file into editor on initial load
+      editor.value = data;   
+      renderMarkdown(); 
     });
-  }
-};
-
-// Function to start file watching
-// If file watching is triggered, enable editor
-const startFileWatching = () => {
-  fileWatcher = fs.watch(path.dirname(selectedFilePath), handleFileChange);
-  editor.disabled = false;
-};
-
-// Function to stop file watching
-const stopFileWatching = () => {
-  if (fileWatcher) {
-    fileWatcher.close();
-    fileWatcher = null;
   }
 };
 
@@ -99,6 +82,7 @@ const saveMarkdownToFile = () => {
           return;
         }
         renderMarkdown(); // Render Markdown after saving the file
+        console.log(`Saved Markdown content to ${selectedFilePath}`);
       });
     }
   }, 300);
@@ -215,7 +199,6 @@ fileList.addEventListener('click', (event) => {
     // if filePath exists, set selectedFilePath to filePath and stop watching the previously selected file
     if (filePath) {
       selectedFilePath = filePath;
-      stopFileWatching();
       // read the file contents and update the editor and start watching the selected file
       fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
         if (err) {
@@ -224,7 +207,7 @@ fileList.addEventListener('click', (event) => {
         }
         editor.value = data;
         renderMarkdown();     // render Markdown content initially upon loading the file
-        startFileWatching();
+        loadFileOnSelection();
         editor.disabled = false;
       });
       // remove the selected class from the previously selected file and add the selected class to the newly selected file
@@ -335,7 +318,6 @@ const deleteFile = (filePath) => {
     console.log(`Deleted ${filePath} successfully`);
   });
   if (filePath === selectedFilePath) {
-    stopFileWatching();
     selectedFilePath = '';
     editor.value = '';
     editor.disabled = true;
@@ -355,9 +337,8 @@ const renameFile = (newName, filePath) => {
     }
   });
   if (filePath === selectedFilePath) {
-    stopFileWatching();
     selectedFilePath = newFilePath;
-    startFileWatching();
+    loadFileOnSelection();
   }
   console.log(`Renamed ${filePath} to ${newName}.md successfully`);
 };

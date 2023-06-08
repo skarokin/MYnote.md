@@ -58,21 +58,21 @@ h6 {
 }
 
 /* custom scrollbar */
-#editor::-webkit-scrollbar, #outputField::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 5px;
 }
 
-#editor::-webkit-scrollbar-track, #outputField::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
-#editor::-webkit-scrollbar-thumb, #outputField::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background-color: #888;
   border-radius: 5px;
   min-height: 50px;
 }
 
-#editor::-webkit-scrollbar-thumb:hover, #outputField::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background-color: #555;
 }
 
@@ -81,25 +81,45 @@ h6 {
   display: flex;
   justify-content: center;
   padding: 2rem; /* Adjust the padding value as needed */
+  flex-direction: row;
+}
+
+#editor, #outputField {
+  overflow: none;
+  scrollbar-width: none;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  color: var(--text-normal);
+  background-color: var(--background);
+  border-radius: 5px;
+  padding: 5px;
+  resize: none;
+  margin-right: 10px;
+  height: calc(100vh - 100px);
+  font-size: 0.8em;
+  line-height: 1.4;
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  width: 600px;
+  white-space: pre;
 }
 
 #editor {
   flex: 1;
   border: transparent;
   outline: none;
-  font-family: 'Ubuntu', monospace;
-  font-size: 24px;
-  overflow-y: scroll;
   color: var(--text-normal);
   background-color: transparent;
-  resize: none;
   margin-right: 10px;
+  white-space: pre-wrap;
+  font-size: 24px;
 }
 
 #outputField {
   flex: 1;
   margin-right: 10px;
-  overflow-y: scroll;
+  white-space: pre wrap;
 }
 
 /* for code blocks */
@@ -120,14 +140,13 @@ p code, li code {
   display: inline-flex;
   align-items: center;
   background-color: var(--background-code);
-  font-family: 'Ubuntu', monospace;
+  font-family: 'Fira Code', monospace;
   font-size: 0.8em;
   padding: 0.2em 0.2em;
   border-radius: 3px;
 }
 
 /* links */
-
 a {
   color: var(--text-link);
 }
