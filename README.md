@@ -8,9 +8,8 @@ The name and theme is inspired by K-pop group aespa, and their mini-album "MY WO
 - Source mode + Reading mode (Toggle with `Ctrl/Cmd + E`) to combine WYSIWYM and WYSIWYG 
 - Syntax highlighting
 - LaTeX support 
-- Dracula-inspired color theme
+- Color theme inspired by Dracula and Obsidian Things
 - Store notes locally as .md files and organize them in folders
-- Scroll position is saved when toggling between Source mode and Reading mode
 - Customizable styling via modifying the included CSS file `index.css`
 - Responsive document outline
 - Easily export notes as .pdf files
