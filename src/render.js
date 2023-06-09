@@ -30,7 +30,11 @@ const md = require('markdown-it')({
  * =======================================
  */
 
-const editor = document.getElementById('editor');
+const editor = CodeMirror(document.getElementById('editor'), {
+  mode: 'markdown',
+  theme: 'dracula',
+  autoCloseBrackets: true,
+});
 const outputField = document.getElementById('outputField');
 let selectedFilePath = null;      // store the currently selected Markdown file path
 
@@ -39,7 +43,7 @@ let timeoutId = null;
 const renderMarkdown = () => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
-    const markdownText = editor.value;
+    const markdownText = editor.getValue();
     const renderedHTML = md.render(markdownText);
     outputField.innerHTML = renderedHTML;
   }, 300); // 300 ms delay to optimize rendering performance
@@ -54,17 +58,17 @@ const renderMarkdown = () => {
 
 // Function to load file upon file selection
 const loadFileOnSelection = (eventType, filename) => {
-  editor.disabled = false;
+  editor.setOption('readOnly', false);
   console.log(`Loaded Markdown content from ${selectedFilePath}`);
   if (filename === path.basename(selectedFilePath)) {
     fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
       if (err) {
-        editor.disabled = true;
+        editor.setOption('readOnly', true);
         console.error(err);
         return;
       }
       // Load Markdown content from file into editor on initial load
-      editor.value = data;   
+      editor.setValue(data);   
       renderMarkdown(); 
     });
   }
@@ -75,7 +79,7 @@ const saveMarkdownToFile = () => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
     if (selectedFilePath) {
-      const markdownText = editor.value;
+      const markdownText = editor.getValue();
       fs.writeFile(selectedFilePath, markdownText, 'utf-8', (err) => {
         if (err) {
           console.error(err);
@@ -89,7 +93,7 @@ const saveMarkdownToFile = () => {
 };
 
 // Add event listener to the editor for input changes
-editor.addEventListener('input', () => {
+editor.on('change', () => {
   saveMarkdownToFile();
 });
 
@@ -99,64 +103,8 @@ editor.addEventListener('input', () => {
  * =============================================================================
  */
 
-// Map of closing characters
-const closingCharactersMap = {
-  '(': ')',
-  '{': '}',
-  '[': ']',
-  '`': '`',
-  '$': '$',
-  '*': '*',
-  '_': '_',
-};
-
-// Add event listener for tab, auto-close, auto-indent, remove auto-indent
-editor.addEventListener('keydown', (event) => {
-  const { key } = event;
-  const { selectionStart, selectionEnd, value } = editor;
-
-  if (event.key === 'Tab') {
-    event.preventDefault();
-    const start = selectionStart;
-    const end = selectionEnd;
-    const tabCharacter = '    ';
-    editor.value = value.substring(0, start) + tabCharacter + value.substring(end);
-    editor.selectionStart = editor.selectionEnd = start + 4;
-    saveMarkdownToFile();
-  } else if (key in closingCharactersMap) {
-      event.preventDefault();
-      const closingCharacter = closingCharactersMap[key];
-      const newText = value.substring(0, selectionStart) + key + closingCharacter + value.substring(selectionEnd);
-      editor.value = newText;
-      editor.selectionStart = editor.selectionEnd = selectionStart + 1;
-      saveMarkdownToFile();
-  } else if (event.key === 'Enter') {
-      event.preventDefault();
-      const currentLine = value.substr(0, selectionStart).split('\n').pop();
-      const indentation = /^\s*/.exec(currentLine)[0];
-      const newText = `\n${indentation}`;
-      editor.setRangeText(newText, selectionStart, selectionStart, 'end');
-      saveMarkdownToFile();
-  } else if (event.key === 'Backspace') {
-      const lastNewlineIndex = value.lastIndexOf('\n', selectionStart - 1);
-      const currentLine = lastNewlineIndex === -1 ? value.substring(0, selectionStart) : value.substring(lastNewlineIndex + 1, selectionStart);
-      const indentationMatch = /^ +/.exec(currentLine);
-      const indentation = indentationMatch ? indentationMatch[0] : '';
-      const tabSize = 4;
-    if (indentation.length % tabSize === 0 && indentation.length > 0 && /^ +$/.test(currentLine.substring(0, selectionStart))) {
-      event.preventDefault();
-      const prevIndentation = indentation.slice(0, -tabSize);
-      const newText = prevIndentation + currentLine.slice(indentation.length);
-      const newSelectionStart = selectionStart - tabSize;
-      editor.setRangeText(newText, selectionStart - currentLine.length, selectionStart, 'end');
-      editor.selectionStart = editor.selectionEnd = newSelectionStart;
-    }
-    saveMarkdownToFile();
-  }
-});
-
 // by default, editor is disabled until a user selects a file
-editor.disabled = true;
+editor.setOption('readOnly', true);
 
 /**
  * =======================================
@@ -205,10 +153,10 @@ fileList.addEventListener('click', (event) => {
           console.error(err);
           return;
         }
-        editor.value = data;
+        editor.setValue(data);
         renderMarkdown();     // render Markdown content initially upon loading the file
         loadFileOnSelection();
-        editor.disabled = false;
+        editor.setOption('readOnly', false);
       });
       // remove the selected class from the previously selected file and add the selected class to the newly selected file
       const selectedFile = document.querySelector('.selected');
@@ -319,8 +267,8 @@ const deleteFile = (filePath) => {
   });
   if (filePath === selectedFilePath) {
     selectedFilePath = '';
-    editor.value = '';
-    editor.disabled = true;
+    editor.setValue('');
+    editor.setOption('readOnly', true);
     renderMarkdown();
   }
 };
