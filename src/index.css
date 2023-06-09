@@ -33,27 +33,27 @@ body {
   justify-content: center; /* Center the divs horizontally */
 }
 
-h1 {
+h1, .cm-header-1 {
   color: var(--text-title-h1);
 }
 
-h2 {
+h2, .cm-header-2 {
   color: var(--text-title-h2);
 }
 
-h3 {
+h3, .cm-header-3 {
   color: var(--text-title-h3);
 }
 
-h4 {
+h4, .cm-header-4 {
   color: var(--text-title-h4);
 }
 
-h5 {
+h5, .cm-header-5 {
   color: var(--text-title-h5);
 }
 
-h6 {
+h6, .cm-header-6 {
   color: var(--text-title-h6);
 }
 
@@ -87,33 +87,22 @@ h6 {
 #editor, #outputField {
   overflow: none;
   scrollbar-width: none;
-  overflow-x: hidden;
-  white-space: pre-wrap;
-  color: var(--text-normal);
+  overflow-x: wrap;
   background-color: var(--background);
   border-radius: 5px;
   padding: 5px;
   resize: none;
   margin-right: 10px;
-  height: calc(100vh - 100px);
-  font-size: 0.8em;
-  line-height: 1.4;
-  word-wrap: break-word;
-  word-break: break-all;
-  overflow-wrap: break-word;
   width: 600px;
-  white-space: pre;
 }
 
 #editor {
   flex: 1;
   border: transparent;
   outline: none;
-  color: var(--text-normal);
   background-color: transparent;
   margin-right: 10px;
   white-space: pre-wrap;
-  font-size: 24px;
 }
 
 #outputField {
@@ -163,7 +152,7 @@ a:visited {
   color: var(--text-a);
 }
 
-/* file explorer (*/
+/* file explorer */
 #noteList {
   position: fixed;
   top: 50px; /* Adjust the top position as per your preference */
