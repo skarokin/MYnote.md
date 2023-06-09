@@ -1,13 +1,13 @@
 :root {
-  --background: #282a36;
-  --background-code: #1a1b26;
-  --text-normal: #f8f8f2;
-  --text-title-h1: #bd93f9;
-  --text-title-h2: #ffb86c;
-  --text-title-h3: #50fa7b;
-  --text-title-h4: #ff5555;
-  --text-title-h5: #f1fa8c;
-  --text-title-h6: #9bbcfb;
+  --background: #1c2126;
+  --background-code: #282c34;
+  --text-normal: #dadada;
+  --text-title-h1: #dadada;
+  --text-title-h2: #dadada;
+  --text-title-h3: #2e7ff2;
+  --text-title-h4: #e4b567;
+  --text-title-h5: #e83e3e;
+  --text-title-h6: #bdc6cf;
   --text-link: #8be9fd;
   --markup-code: #ffb86c;
   --text-tag: #50fa7b;
@@ -17,15 +17,14 @@
   --interactive-accent: #50fa7b;
   --blockquote-border: #b294bb;
   --interactive-accent-rgb: #f1fa8c;
-  --menu-background: #3f4355; 
-  --menu-border: #575b6d;
-  --menu-selected: #7d86b3;
+  --menu-background: #181c20; 
+  --menu-border: #35393e;
+  --menu-selected: #292d31;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
-  width: 60rem;
   padding: 2rem;
   background-color: var(--background);
   color: var(--text-normal);
@@ -57,6 +56,10 @@ h6, .cm-header-6 {
   color: var(--text-title-h6);
 }
 
+strong, em {
+  color: #ff82b2;
+}
+
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
@@ -85,11 +88,6 @@ h6, .cm-header-6 {
 }
 
 #editor, #outputField {
-  overflow: none;
-  scrollbar-width: none;
-  overflow-x: wrap;
-  background-color: var(--background);
-  border-radius: 5px;
   padding: 5px;
   resize: none;
   margin-right: 10px;
@@ -98,11 +96,34 @@ h6, .cm-header-6 {
 
 #editor {
   flex: 1;
-  border: transparent;
-  outline: none;
-  background-color: transparent;
   margin-right: 10px;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+  outline: none;
+}
+
+.cm-header-1 {
+  font-size: 32px;
+}
+
+.cm-header-2 {
+  font-size: 24px;
+}
+
+.cm-header-3 {
+  font-size: 18.72px;
+}
+
+.cm-header-4 {
+  font-size: 16px;
+}
+
+.cm-header-5 {
+  font-size: 13.28px;
+}
+
+.cm-header-6 {
+  font-size: 10.72px;
 }
 
 #outputField {
@@ -154,9 +175,7 @@ a:visited {
 
 /* file explorer */
 #noteList {
-  position: fixed;
-  top: 50px; /* Adjust the top position as per your preference */
-  left: 25px; /* Adjust the left position as per your preference */
+  margin-top: 50px; /* Adjust the top margin as per your preference */
   width: 200px; /* Adjust the width as per your preference */
   height: calc(100vh - 100px); /* Adjust the height as per your preference */
   background: var(--menu-background);
@@ -165,6 +184,7 @@ a:visited {
   padding: 5px;
   overflow-y: auto; /* Enable vertical scrolling if content exceeds the height */
   overflow-x: hidden;
+  flex-shrink: 0;   /* prevent shrinking within flex container */
 }
 
 #fileList {
@@ -190,6 +210,7 @@ a:visited {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  outline: none;
 }
 
 /* context menu */
