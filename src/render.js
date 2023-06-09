@@ -32,8 +32,10 @@ const md = require('markdown-it')({
 
 const editor = CodeMirror(document.getElementById('editor'), {
   mode: 'markdown',
-  theme: 'dracula',
+  theme: 'my-theme',
   autoCloseBrackets: true,
+  lineWrapping: true,
+  viewportMargin: Infinity,
 });
 const outputField = document.getElementById('outputField');
 let selectedFilePath = null;      // store the currently selected Markdown file path
