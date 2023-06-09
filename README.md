@@ -22,4 +22,4 @@ MYnote.md relies on the following as dependencies:
     - **markdown-it-texmath:** Add TeX math equations to your Markdown documents rendered by markdown-it parser. More information about markdown-it-texmath [here](https://github.com/goessner/markdown-it-texmath)
 - **KaTeX:** A fast, easy-to-use JavaScript library for TeX math rendering on the web. More inforamtion about KaTeX [here](https://katex.org/)
 - **highlight.js:** Syntax highlighting for the Web. More information about highlight.js [here](https://highlightjs.org/)
-- **CodeMirrorL** A code editor component for the web. More information about CodeMirror [here](https://codemirror.net/)
+- **CodeMirror:** A code editor component for the web. More information about CodeMirror [here](https://codemirror.net/)
