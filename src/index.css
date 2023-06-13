@@ -1,6 +1,6 @@
 :root {
   --background: #1c2126;
-  --background-code: #282c34;
+  --background-code: #2c3039;
   --text-normal: #dadada;
   --text-title-h1: #dadada;
   --text-title-h2: #dadada;
@@ -56,6 +56,10 @@ h6, .cm-header-6 {
   color: var(--text-title-h6);
 }
 
+h1, h2, h3, h4, h5, h6 {
+  margin: 15px 0px;
+}
+
 strong, em {
   color: #ff82b2;
 }
@@ -82,24 +86,39 @@ strong, em {
 /* editor and output fields */
 #contentField {
   display: flex;
-  justify-content: center;
-  padding: 2rem; /* Adjust the padding value as needed */
-  flex-direction: row;
+  padding: 2rem;
+  width: 1200px;
 }
 
 #editor, #outputField {
   padding: 5px;
   resize: none;
-  margin-right: 10px;
+  padding: 5px;
+  margin-top: 25px;
   width: 600px;
 }
 
+.CodeMirror {
+  overflow-y: hidden;
+  width: 600px;
+  height: auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.cm-comment {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8em;
+}
+
 #editor {
-  flex: 1;
   margin-right: 10px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   outline: none;
+}
+
+#contentField .hidden {
+  display: none;
 }
 
 .cm-header-1 {
@@ -126,14 +145,9 @@ strong, em {
   font-size: 10.72px;
 }
 
-#outputField {
-  flex: 1;
-  margin-right: 10px;
-  white-space: pre wrap;
-}
-
 /* for code blocks */
 pre {
+  position: relative;
   background: var(--background-code);
   padding: 25px 25px;
   border-radius: 6px;
@@ -175,16 +189,17 @@ a:visited {
 
 /* file explorer */
 #noteList {
+  position: relative;
   margin-top: 50px; /* Adjust the top margin as per your preference */
   width: 200px; /* Adjust the width as per your preference */
-  height: calc(100vh - 100px); /* Adjust the height as per your preference */
   background: var(--menu-background);
   border: 1px solid var(--menu-border);
   border-radius: 5px;
   padding: 5px;
   overflow-y: auto; /* Enable vertical scrolling if content exceeds the height */
   overflow-x: hidden;
-  flex-shrink: 0;   /* prevent shrinking within flex container */
+  right: 200px;
+  flex-shrink: 0;
 }
 
 #fileList {
@@ -275,11 +290,10 @@ a:visited {
 }
 
 /* display code flair on top right of code blocks */
-.code-flair {
+pre .code-flair {
+  position: absolute;
   display: inline-block;
-  position: relative;
-  top: 0;
-  left: 95%;
+  right: 4%;
   padding: 2px 4px;
   font-size: 12px;
   font-weight: bold;

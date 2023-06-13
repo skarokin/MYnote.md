@@ -1,19 +1,6 @@
-# hey
----
-## hey
-### hey
-#### hey
-##### hey
-###### hey
-
-```js
-function function() {
-	// this is a function
-    return `Ahoy!`;
-}
+```py
+def test():
+    # this is a test of indentation!
+    # this is working!
+    return x + y
 ```
-
-**hey**
-*hey*
-
-
