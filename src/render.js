@@ -11,6 +11,7 @@ const md = require('markdown-it')({
         // Add the programming language as a flair before the highlighted code
         const codeFlair = `<div class="code-flair">${lang}</div>`;
         const highlightedCode = hljs.highlight(str, { language: lang }).value;
+        // add the programming language as a flair after the highlighted code
         return `${codeFlair}${highlightedCode}`;
       } catch (__) {}
     }
@@ -29,14 +30,28 @@ const md = require('markdown-it')({
  *           MARKDOWN RENDERING
  * =======================================
  */
-
-const editor = CodeMirror(document.getElementById('editor'), {
+const editor = document.getElementById('editor');
+const CodeMirrorEditor = CodeMirror(editor, {
   mode: 'markdown',
   theme: 'my-theme',
   autoCloseBrackets: true,
   lineWrapping: true,
   viewportMargin: Infinity,
+  indentUnit: 4, // Set the desired number of spaces for indentation
+  indentWithTabs: false, // Use soft tabs for indentation
+  extraKeys: {
+    // Use spaces for indentation instead of .cm-tab
+    Tab: function(cm) {
+      if (cm.somethingSelected()) {
+        cm.indentSelection("add"); // Indent selected lines
+      } else {
+        cm.replaceSelection(cm.getOption("indentWithTabs") ? "\t" :
+          Array(cm.getOption("indentUnit") + 1).join(" "), "end"); // Insert soft tabs
+      }
+    }
+  },
 });
+
 const outputField = document.getElementById('outputField');
 let selectedFilePath = null;      // store the currently selected Markdown file path
 
@@ -45,11 +60,11 @@ let timeoutId = null;
 const renderMarkdown = () => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
-    const markdownText = editor.getValue();
+    const markdownText = CodeMirrorEditor.getValue();
     const renderedHTML = md.render(markdownText);
     outputField.innerHTML = renderedHTML;
   }, 300); // 300 ms delay to optimize rendering performance
-  console.log(`Rendered Markdown from editor to outputField`);
+  console.log(`Rendered Markdown from CodeMirrorEditor to outputField`);
 };
 
 /**
@@ -60,17 +75,18 @@ const renderMarkdown = () => {
 
 // Function to load file upon file selection
 const loadFileOnSelection = (eventType, filename) => {
-  editor.setOption('readOnly', false);
+  CodeMirrorEditor.setOption('readOnly', false);
   console.log(`Loaded Markdown content from ${selectedFilePath}`);
   if (filename === path.basename(selectedFilePath)) {
     fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
       if (err) {
-        editor.setOption('readOnly', true);
+        CodeMirrorEditor.setOption('readOnly', true);
         console.error(err);
         return;
       }
-      // Load Markdown content from file into editor on initial load
-      editor.setValue(data);   
+      // Load Markdown content from file into CodeMirrorEditor on initial load
+      CodeMirrorEditor.setValue(data);   
+      CodeMirrorEditor.clearHistory();      // Clear undo history upon file load
       renderMarkdown(); 
     });
   }
@@ -81,7 +97,7 @@ const saveMarkdownToFile = () => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
     if (selectedFilePath) {
-      const markdownText = editor.getValue();
+      const markdownText = CodeMirrorEditor.getValue();
       fs.writeFile(selectedFilePath, markdownText, 'utf-8', (err) => {
         if (err) {
           console.error(err);
@@ -94,8 +110,8 @@ const saveMarkdownToFile = () => {
   }, 300);
 };
 
-// Add event listener to the editor for input changes
-editor.on('change', () => {
+// Add event listener to the CodeMirrorEditor for input changes
+CodeMirrorEditor.on('change', () => {
   saveMarkdownToFile();
 });
 
@@ -105,8 +121,8 @@ editor.on('change', () => {
  * =============================================================================
  */
 
-// by default, editor is disabled until a user selects a file
-editor.setOption('readOnly', true);
+// by default, CodeMirrorEditor is disabled until a user selects a file
+CodeMirrorEditor.setOption('readOnly', true);
 
 /**
  * =======================================
@@ -149,16 +165,17 @@ fileList.addEventListener('click', (event) => {
     // if filePath exists, set selectedFilePath to filePath and stop watching the previously selected file
     if (filePath) {
       selectedFilePath = filePath;
-      // read the file contents and update the editor and start watching the selected file
+      // read the file contents and update the CodeMirrorEditor and start watching the selected file
       fs.readFile(selectedFilePath, 'utf-8', (err, data) => {
         if (err) {
           console.error(err);
           return;
         }
-        editor.setValue(data);
+        CodeMirrorEditor.setValue(data);
+        CodeMirrorEditor.clearHistory();      // Clear undo history upon new file selection   
         renderMarkdown();     // render Markdown content initially upon loading the file
         loadFileOnSelection();
-        editor.setOption('readOnly', false);
+        CodeMirrorEditor.setOption('readOnly', false);
       });
       // remove the selected class from the previously selected file and add the selected class to the newly selected file
       const selectedFile = document.querySelector('.selected');
@@ -235,7 +252,7 @@ contextMenuNoteList.addEventListener('click', (event) => {
         targetSpan.onkeydown = null;
         targetSpan.blur();
         renameFile(targetSpan.textContent, targetFilePath);
-        editor.focus();
+        CodeMirrorEditor.focus();
         // Escape to cancel rename
       } else if (event.key === 'Escape') {
         event.preventDefault();
@@ -244,7 +261,7 @@ contextMenuNoteList.addEventListener('click', (event) => {
         targetSpan.onkeydown = null;
         targetSpan.blur();
         console.log(`Cancelled renaming of ${targetFilePath} successfully`);
-        editor.focus();
+        CodeMirrorEditor.focus();
       }    
     }
   }
@@ -269,8 +286,9 @@ const deleteFile = (filePath) => {
   });
   if (filePath === selectedFilePath) {
     selectedFilePath = '';
-    editor.setValue('');
-    editor.setOption('readOnly', true);
+    CodeMirrorEditor.setValue('');
+    CodeMirrorEditor.clearHistory();          // Clear undo history upon deleting file
+    CodeMirrorEditor.setOption('readOnly', true);
     renderMarkdown();
   }
 };
@@ -331,6 +349,10 @@ const addFile = () => {
   }, 100);
 };
 
+const addFolder = () => {
+  
+};
+
 // Upon clicking the newNote div, add a new note and automatically select it and let user rename it
 const newNote = document.getElementById('newNote');
 newNote.addEventListener('click', () => {
@@ -345,3 +367,46 @@ newFolder.addEventListener('click', () => {
 
 // List MD files upon page load
 listMDFiles();
+
+/**
+ * ====================================================================
+ *              SOURCE MODE + READING MODE CONTROLS
+ * ====================================================================
+ */
+let codeMirrorScrollPosition;
+let codeMirrorCursorPosition;
+let outputFieldScrollPosition;
+let outputFieldCursorPosition;
+
+// By default, app is in Source mode
+let isSourceMode = true;
+
+// Toggle between Source mode and Reading mode
+// Save and restore scroll position when going from Source <-> Reading
+// Save cursor position when going from Source -> Reading, and restore when going from Reading -> Source
+
+const toggleMode = () => {
+  // If in source mode, switch to Reading
+  if (isSourceMode) {
+    CodeMirrorEditor.setOption('readOnly', true);
+    editor.classList.add('hidden');
+    outputField.classList.remove('hidden');
+  // If in reading mode, switch to Source and focus on CodeMirrorEditor
+  } else {
+    CodeMirrorEditor.setOption('readOnly', false);
+    editor.classList.remove('hidden');
+    outputField.classList.add('hidden');
+    CodeMirrorEditor.focus();
+  }
+
+  // Switch modes 
+  isSourceMode = !isSourceMode;
+};
+
+// Toggle between Source mode and Reading mode upon "Ctrl + E" or "Cmd + E"
+document.addEventListener('keydown', (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
+    event.preventDefault(); 
+    toggleMode();
+  }
+});
